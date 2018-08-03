@@ -10,26 +10,36 @@ def get_auction_values(position_main="All"):
     df = pd.DataFrame()
     i = 1
     position_str = ""
-    limit = 200                                             # Limit search results to 200 results
+    # Limit search results to 200 results
+    limit = 200
 
     if position_main != "All":
         position_str = "&position=" + position_main
-        limit = 100                                         # Limit individual position searches to 100 results
+        # Limit individual position searches to 100 results
+        limit = 100
 
     while i < limit:
         url = "http://fantasy.nfl.com/draftcenter/breakdown?offset=" + str(i) + "&sort=draftAverageAuctionCost" + position_str
-        table = pd.read_html(url, flavor="html5lib")        # Returns as 1x1 LIST of DataFrame objects
-        df = df.append(table[0])                            # Extract the first element of the 1x1 list
-        i += 25                                             # NFL.com pages are limited to 25 results per page
+        # Returns as 1x1 LIST of DataFrame objects
+        table = pd.read_html(url, flavor="html5lib")
+        # Extract the first element of the 1x1 list
+        df = df.append(table[0])
+        # NFL.com pages are limited to 25 results per page
+        i += 25
 
-    df.columns = df.columns.droplevel(0)                    # Remove unnecessary top level row
+    # Remove unnecessary top level row
+    df.columns = df.columns.droplevel(0)
     df = df.reset_index()
     rows, cols = df.shape
 
-    new_col = [''] * rows                                   # Initialize empty columns for Positions and Teams
-    index_list = list(range(rows))                          # Index list from 1 to 100 or 1 to 200 depending on query
-    df.insert(1, "Position", new_col)                       # Add new column for Position
-    df.insert(2, "Team", new_col)                           # Add new column for Team
+    # Initialize empty columns for Positions and Teams
+    new_col = [''] * rows
+    # Index list from 1 to 100 or 1 to 200 depending on query
+    index_list = list(range(rows))
+    # Add new column for Position
+    df.insert(1, "Position", new_col)
+    # Add new column for Team
+    df.insert(2, "Team", new_col)
 
     # iterate through all player cells and populate player name, position, and team by parsing out current information
     for index in index_list:
@@ -54,7 +64,6 @@ def get_auction_values(position_main="All"):
 
         except ValueError:
             # For current players NOT on a team
-            # player_position = player
             second_space_index = len(player) - player[::-1].find(" ") - 1
             position = player[second_space_index+1:1]
             player = player[:second_space_index]
